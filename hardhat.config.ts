@@ -4,7 +4,7 @@ dotEnvConfig();
 import { HardhatUserConfig } from "hardhat/types";
 
 import "@nomiclabs/hardhat-waffle";
-import "@typechain/hardhat";
+import "hardhat-typechain";
 import "@nomiclabs/hardhat-etherscan";
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
@@ -26,6 +26,10 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY,
+  },
+  typechain: {
+    outDir: "typechain",
+    target: "ethers-v5",
   },
 };
 
