@@ -12,6 +12,8 @@ import {
   Quoter__factory,
   NFTDescriptor,
   NFTDescriptor__factory,
+  Rebalancer,
+  Rebalancer__factory,
 } from "../typechain";
 
 export class DeployHelper {
@@ -46,5 +48,10 @@ export class DeployHelper {
 
   public async deployNFTDescriptor(): Promise<NFTDescriptor> {
     return await new NFTDescriptor__factory(this.owner).deploy();
+  }
+
+  // Rebalancer
+  public async deployRebalancer(swapRouter: string, nftManager: string): Promise<Rebalancer> {
+    return await new Rebalancer__factory(this.owner).deploy(swapRouter, nftManager);
   }
 }
