@@ -42,8 +42,8 @@ describe("Rebalancer", () => {
     await uniswapSetup.initialize(await owner.getAddress(), weth, 2000, wbtc, 35000, dai);
     
     // add some wide liquidity to seed pool
-    await weth.approve(uniswapSetup.nftPositionManager.address, parseEther("10"));
-    await dai.approve(uniswapSetup.nftPositionManager.address, parseEther("25000"));
+    await weth.approve(uniswapSetup.nftPositionManager.address, parseEther("100"));
+    await dai.approve(uniswapSetup.nftPositionManager.address, parseEther("250000"));
     await uniswapSetup.addLiquidityWide(weth, dai, 3000, parseEther("10"), parseEther("25000"), owner.address);
 
     // deploy rebalancer
@@ -102,9 +102,7 @@ describe("Rebalancer", () => {
       await weth.connect(subjectCaller).approve(uniswapSetup.nftPositionManager.address, parseEther("10"));
       await dai.connect(subjectCaller).approve(uniswapSetup.nftPositionManager.address, parseEther("25000"));
 
-      const mintData = uniswapSetup.nftPositionManager.interface.encodeFunctionData(
-        "mint",
-        [{
+      await uniswapSetup.nftPositionManager.mint({
           token0: subjectToken1.address,
           token1: subjectToken2.address,
           tickLower: initTickLower,
@@ -116,17 +114,12 @@ describe("Rebalancer", () => {
           amount1Min: 0,
           recipient: subjectCaller.address,
           deadline: BigNumber.from(2).pow(256).sub(1)
-        }]
+        }
       );
 
-      const returnData = await subjectCaller.call({
-        to: uniswapSetup.nftPositionManager.address,
-        value: 0,
-        data: mintData
-      });
+      subjectTokenId = await uniswapSetup.nftPositionManager.totalSupply();
 
-      const result = uniswapSetup.nftPositionManager.interface.decodeFunctionResult("mint", returnData);
-      subjectTokenId = result.tokenId;
+      await uniswapSetup.nftPositionManager.connect(subjectCaller).approve(rebalancer.address, subjectTokenId);
     });
 
     async function subject(): Promise<ContractTransaction> {
@@ -150,7 +143,14 @@ describe("Rebalancer", () => {
       });
 
       it("should remove all liquidity from the initial position", async () => {
+        const initPosition = await uniswapSetup.nftPositionManager.positions(subjectTokenId);
+
         await subject();
+
+        const finalPosition = await uniswapSetup.nftPositionManager.positions(subjectTokenId);
+
+        expect(initPosition.liquidity).to.gt(0);
+        expect(finalPosition.liquidity).to.eq(0);
       });
   
       it("give caller new NFT with liquidity in new range", async () => {
