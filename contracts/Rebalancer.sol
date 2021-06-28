@@ -6,7 +6,6 @@ import { ISwapRouter } from "@uniswap/v3-periphery/contracts/interfaces/ISwapRou
 
 import { console } from "hardhat/console.sol";
 
-//type DecreaseLiquidtyParams = INonfungiblePositionManager.DecreaseLiquidityParams;
 
 contract Rebalancer {
 
